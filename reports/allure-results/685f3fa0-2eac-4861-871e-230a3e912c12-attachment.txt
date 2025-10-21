@@ -1,0 +1,9 @@
+[32mINFO    [0m pytest_ginchat_api:request_util.py:16 请求方法: DELETE
+[32mINFO    [0m pytest_ginchat_api:request_util.py:17 请求URL: http://localhost:8080/user/deleteUser
+[32mINFO    [0m pytest_ginchat_api:request_util.py:18 请求头: {'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZGVudGl0eSI6ImUyYzY0NDUxLWRjYWEtNGNmMy1iNzhkLTA3ZWM2N2M2YzM4MiIsIm5hbWUiOiJ0ZXN0MDAxIiwiaXNzIjoiR0luY2hhdCIsImV4cCI6MTc2MTExMjM1MX0.VcZrtYLI-1N4lV7tCVFMiWGSfhgqvKdODjsPWnnH2yA'}
+[32mINFO    [0m pytest_ginchat_api:request_util.py:19 请求params: {'id': 1}
+[32mINFO    [0m pytest_ginchat_api:request_util.py:20 请求data: None
+[32mINFO    [0m pytest_ginchat_api:request_util.py:21 请求json: None
+[32mINFO    [0m pytest_ginchat_api:request_util.py:25 响应状态码: 200
+[32mINFO    [0m pytest_ginchat_api:request_util.py:26 响应内容: {"code":0,"data":null,"message":"删除成功"}
+[32mINFO    [0m pytest_ginchat_api:test_user_delete.py:12 {"code":0,"data":null,"message":"删除成功"}

@@ -1,0 +1,17 @@
+env: test  # 当前环境，可选：dev / test / prod
+
+env_config:
+  dev:
+    base_url: "http://127.0.0.1:8080"
+    headers:
+      Content-Type: "application/json"
+
+  test:
+    base_url: "http://localhost:8080"
+    headers:
+      Content-Type: "application/x-www-form-urlencoded"
+
+  prod:
+    base_url: "https://api.yourcompany.com"
+    headers:
+      Content-Type: "application/json"

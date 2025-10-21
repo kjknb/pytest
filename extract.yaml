@@ -1,0 +1,10 @@
+primary_user_id: 27
+users:
+- id: 27
+  identity: 4f60c618-8c37-48de-a757-636bfef3ae40
+  name: test001
+  password: '123456'
+- id: 28
+  identity: f1faca9b-4bcf-44d0-926d-9ac53847dfa4
+  name: test002
+  password: '123456'
