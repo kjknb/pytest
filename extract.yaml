@@ -1,10 +1,11 @@
-primary_user_id: 27
 users:
-- id: 27
-  identity: 4f60c618-8c37-48de-a757-636bfef3ae40
-  name: test001
+- id: 1
+  identity: e61ae0aa-1223-4bec-9d3c-ee502642efc7
+  name: test001_new
   password: '123456'
-- id: 28
-  identity: f1faca9b-4bcf-44d0-926d-9ac53847dfa4
-  name: test002
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiaWRlbnRpdHkiOiJlNjFhZTBhYS0xMjIzLTRiZWMtOWQzYy1lZTUwMjY0MmVmYzciLCJuYW1lIjoidGVzdDAwMSIsImlzcyI6ImdpbmNoYXQiLCJzdWIiOiJ1c2VyX3Rva2VuIiwiZXhwIjoxNzYxMTk5ODg0LCJpYXQiOjE3NjExMTM0ODR9.4JaiZJH2E_bgroF7jYpliUVKFX5YgTDT1OgovdIzU-U
+- id: 2
+  identity: f2967a51-c9ee-4ee8-af0b-dc1ebbc6ee01
+  name: test002_new
   password: '123456'
+  token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiaWRlbnRpdHkiOiJmMjk2N2E1MS1jOWVlLTRlZTgtYWYwYi1kYzFlYmJjNmVlMDEiLCJuYW1lIjoidGVzdDAwMiIsImlzcyI6ImdpbmNoYXQiLCJzdWIiOiJ1c2VyX3Rva2VuIiwiZXhwIjoxNzYxMTk5ODg0LCJpYXQiOjE3NjExMTM0ODR9.ceVgkat2p-_vNAi-OPPiqfAF1ODrXh5KH4_84jHR0wQ

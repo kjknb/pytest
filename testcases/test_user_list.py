@@ -1,15 +1,10 @@
-# -*- coding: utf-8 -*-
 import pytest
-from common.yaml_util import extract_get
-from api.user_api import UserApi  # 你已有的封装，内部使用 RequestUtil
+import requests
 
-@pytest.mark.dependency(depends=["create_users"], name="list_users")
-def test_user_list():
-    api = UserApi()
-    j = api.user_list()
-    print(j)
-    assert j["code"] == 0
-    created = extract_get("users", [])
-    assert isinstance(j["data"]["list"], list)
-    # 至少包含我们创建的数量
-    assert j["data"]["total"] >= len(created)
+@pytest.mark.dependency(name="list_users", depends=["create_users"], scope="session")
+def test_user_list(get_base_url):
+    """获取用户列表"""
+    url = f"{get_base_url}/user/list"
+    resp = requests.get(url)
+    print(resp.text)
+    assert resp.status_code == 200

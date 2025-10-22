@@ -1,111 +1,108 @@
-# -*- coding: utf-8 -*-
-"""
-yaml_util.py —— 统一封装 YAML 文件的 读 / 写 / 追加 / 清空 操作
-兼容老版本 extract_get, extract_set, extract_list_append 函数
-"""
-
 import os
 import yaml
 
-# 获取项目根目录
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "../"))
+# ============================================================
+# 📂 全局路径配置
+# ============================================================
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+EXTRACT_PATH = os.path.join(BASE_DIR, "extract.yaml")
 
-# ======================================================================
-# 🟩 通用读写操作
-# ======================================================================
 
-def read_yaml_file(file_path):
-    """读取 YAML 文件（返回 dict 或 list）"""
+# ============================================================
+# 🧩 读取 YAML 文件
+# ============================================================
+def read_yaml_file(file_path=EXTRACT_PATH):
+    """读取 YAML 文件，返回字典"""
     if not os.path.exists(file_path):
-        print(f"[WARN] 文件不存在: {file_path}")
         return {}
     with open(file_path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
-
-def write_yaml(key, value, file_path):
-    """写入或更新 YAML 文件中的某个键"""
-    data = {}
-    if os.path.exists(file_path):
-        with open(file_path, "r", encoding="utf-8") as f:
+        try:
             data = yaml.safe_load(f) or {}
+            return data
+        except yaml.YAMLError as e:
+            print(f"[ERROR] YAML 读取失败: {e}")
+            return {}
 
-    if isinstance(data, list):
-        data = {"users": data}  # 自动修正为标准结构
+
+# ============================================================
+# ✏️ 写入 YAML 指定 key
+# ============================================================
+def write_yaml(key, value, file_path=EXTRACT_PATH):
+    """
+    向 YAML 文件中写入指定 key（会保留其他内容）
+    例: write_yaml("users", [{"id": 1, "name": "test"}])
+    """
+    data = read_yaml_file(file_path)
     data[key] = value
-
     with open(file_path, "w", encoding="utf-8") as f:
-        yaml.safe_dump(data, f, allow_unicode=True)
+        yaml.safe_dump(data, f, allow_unicode=True, sort_keys=False)
     print(f"[INFO] 写入键 {key} 到 YAML 文件: {file_path}")
 
-def append_yaml(new_data, file_path):
-    """向 YAML 文件追加一条记录"""
-    existing_data = []
-    if os.path.exists(file_path):
-        with open(file_path, "r", encoding="utf-8") as f:
-            existing_data = yaml.safe_load(f) or []
-    if not isinstance(existing_data, list):
-        existing_data = [existing_data]
-    existing_data.append(new_data)
-    with open(file_path, "w", encoding="utf-8") as f:
-        yaml.safe_dump(existing_data, f, allow_unicode=True)
-    print(f"[INFO] 成功追加 YAML 文件: {file_path}")
 
-def clear_yaml(file_path):
+# ============================================================
+# ➕ 追加写入 YAML（不会覆盖）
+# ============================================================
+def append_yaml(key, value, file_path=EXTRACT_PATH):
+    """向 YAML 文件追加 key，不覆盖原内容"""
+    data = read_yaml_file(file_path)
+    if key not in data:
+        data[key] = []
+    if isinstance(data[key], list):
+        data[key].append(value)
+    else:
+        data[key] = value
+    with open(file_path, "w", encoding="utf-8") as f:
+        yaml.safe_dump(data, f, allow_unicode=True, sort_keys=False)
+    print(f"[INFO] 追加写入 {key} 到 YAML 文件: {file_path}")
+
+
+# ============================================================
+# 🧹 清空 YAML 文件
+# ============================================================
+def clear_yaml(file_path=EXTRACT_PATH):
     """清空 YAML 文件内容"""
     with open(file_path, "w", encoding="utf-8") as f:
         f.truncate()
-    print(f"[INFO] 已清空 YAML 文件: {file_path}")
+    print(f"[INIT] ✅ 已清空提取文件: {file_path}")
 
-# ======================================================================
-# 🟨 兼容旧版接口（extract 系列函数）
-# ======================================================================
 
-EXTRACT_PATH = os.path.abspath(os.path.join(BASE_DIR, "extract.yaml"))
+# ============================================================
+# ✅ 兼容：直接写入整个 YAML 文件（新增）
+# ============================================================
+def write_yaml_file(file_path=EXTRACT_PATH, data=None):
+    """
+    覆盖写入整个 YAML 文件（完全替换）
+    等价于 write_yaml_file("extract.yaml", {"users": [...]})
+    """
+    if data is None:
+        data = {}
+    with open(file_path, "w", encoding="utf-8") as f:
+        yaml.safe_dump(data, f, allow_unicode=True, sort_keys=False)
+    print(f"[INFO] ✅ 已更新 YAML 文件: {file_path}")
 
+
+# ============================================================
+# 🔧 提取方法（兼容旧版接口）
+# ============================================================
 def extract_get(key, file_path=EXTRACT_PATH):
-    """兼容新版 + 旧版 extract.yaml 结构"""
+    """根据 key 获取 YAML 中的值"""
     data = read_yaml_file(file_path)
-
-    if isinstance(data, dict):
-        # 新写入的 key-value 结构
-        return data.get(key)
-    elif isinstance(data, list):
-        # 如果是列表，看看是否有字典元素含 key
-        for item in data:
-            if isinstance(item, dict) and key in item:
-                return item[key]
-        # 没找到则返回 None
-        return None
-    else:
-        return None
+    return data.get(key, None)
 
 
 def extract_set(key, value, file_path=EXTRACT_PATH):
-    """兼容旧版：写入 extract.yaml 指定 key"""
+    """设置 key 对应的值"""
     write_yaml(key, value, file_path)
 
-def extract_list_append(new_user, file_path=EXTRACT_PATH):
-    """将新用户追加到 extract.yaml 的 users 列表中"""
-    data = {}
 
-    # 1️⃣ 读取原文件（如果存在）
-    if os.path.exists(file_path):
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = yaml.safe_load(f) or {}
+def extract_list_append(key, value, file_path=EXTRACT_PATH):
+    """向列表类型 key 中追加一个元素"""
+    append_yaml(key, value, file_path)
 
-    # 2️⃣ 若文件是列表，转换为 dict
-    if isinstance(data, list):
-        data = {"users": data}
 
-    # 3️⃣ 确保存在 users 键
-    if "users" not in data or not isinstance(data["users"], list):
-        data["users"] = []
-
-    # 4️⃣ 追加用户
-    data["users"].append(new_user)
-
-    # 5️⃣ 写回文件
-    with open(file_path, "w", encoding="utf-8") as f:
-        yaml.dump(data, f, allow_unicode=True)
-
-    print(f"[INFO] 成功追加用户信息到 users 节点: {file_path}")
+# ============================================================
+# 🔐 Token 专用函数
+# ============================================================
+def save_token(token, file_path=EXTRACT_PATH):
+    """单独保存 token 节点"""
+    write_yaml("token", token, file_path)

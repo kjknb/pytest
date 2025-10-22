@@ -1,0 +1,10 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"创建用户并保存至 extract.yaml","407","test_create_user[item0]","testcases","Wed Oct 22 14:11:23 CST 2025","passed","Wed Oct 22 14:11:24 CST 2025","","test_user_01_create","",""
+"
+    初始化数据库，清空 user_basic 表
+    ","0","test_message_send[data0]","testcases","Wed Oct 22 14:11:23 CST 2025","passed","Wed Oct 22 14:11:23 CST 2025","","test_message_send","",""
+"更新用户信息","878","test_update_user","testcases","Wed Oct 22 14:11:24 CST 2025","passed","Wed Oct 22 14:11:25 CST 2025","","test_user_03_update","",""
+"删除用户（依赖更新用例）","671","test_delete_user","testcases","Wed Oct 22 14:11:25 CST 2025","passed","Wed Oct 22 14:11:26 CST 2025","","test_user_04_delete","",""
+"创建用户并保存至 extract.yaml","511","test_create_user[item1]","testcases","Wed Oct 22 14:11:24 CST 2025","passed","Wed Oct 22 14:11:24 CST 2025","","test_user_01_create","",""
+"登录所有用户并保存 token","209","test_login_all","testcases","Wed Oct 22 14:11:24 CST 2025","passed","Wed Oct 22 14:11:24 CST 2025","","test_user_02_login","",""
+"获取用户列表","4","test_user_list","testcases","Wed Oct 22 14:11:26 CST 2025","passed","Wed Oct 22 14:11:26 CST 2025","","test_user_list","",""

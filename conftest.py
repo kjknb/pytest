@@ -1,100 +1,92 @@
 import os
 import pytest
 import subprocess
-import yaml
+import shutil
+from datetime import datetime
 
-# ============================================================
-# ✅ 自动清空数据库（在所有测试前执行）
-# ============================================================
+# ANSI 颜色定义（Windows PowerShell / PyCharm 都支持）
+GREEN = "\033[92m"    # ✅ 成功（绿色）
+YELLOW = "\033[93m"   # ⚠️ 警告（黄色）
+RED = "\033[91m"      # ❌ 错误（红色）
+CYAN = "\033[96m"     # 🚀 提示（青色）
+RESET = "\033[0m"     # 重置颜色
 
-@pytest.fixture(scope="session", autouse=True)
-def clear_db_before_tests():
-    """
-    在执行 pytest 前，自动运行 PowerShell 脚本 clear_db.ps1
-    以清空 user_basic 表，确保测试数据环境干净。
-    """
-    print("\n[INIT] 自动清空数据库中的 user_basic 表 ...")
+def color_log(msg, color=RESET):
+    """带颜色输出"""
+    print(f"{color}{msg}{RESET}")
 
-    script_path = os.path.join(os.getcwd(), "clear_db.ps1")
-    if os.path.exists(script_path):
-        try:
-            subprocess.run(
-                ["powershell", "-ExecutionPolicy", "Bypass", "-File", script_path],
-                check=True,
-                text=True
-            )
-        except subprocess.CalledProcessError as e:
-            print(f"⚠️ 数据库清空脚本执行失败：{e}")
+# ================================
+# 🧹 自动初始化逻辑
+# ================================
+def pytest_sessionstart(session):
+    """测试会话开始时执行：清空 extract.yaml、数据库表、Allure 报告"""
+    base_dir = os.path.dirname(__file__)
+    extract_file = os.path.join(base_dir, "extract.yaml")
+
+    # === 1️⃣ 清空 extract.yaml 文件 ===
+    if os.path.exists(extract_file):
+        open(extract_file, "w").close()
+        color_log(f"[INIT] ✅ 已清空提取文件: {extract_file}", GREEN)
     else:
-        print("⚠️ 未找到 clear_db.ps1，跳过清库操作。")
+        color_log(f"[INIT] ⚠️ 未找到提取文件 extract.yaml，将在首次写入时自动创建", YELLOW)
+
+    # === 2️⃣ 清空数据库 user_basic 表 ===
+    try:
+        color_log("[INIT] 🚀 正在清空数据库中的 user_basic 表 ...", CYAN)
+        cmd = (
+            'docker exec -i mysql-docker mysql -uroot -p123456 ginchat '
+            '-e "TRUNCATE TABLE user_basic;"'
+        )
+        result = subprocess.run(cmd, shell=True, capture_output=True, text=True)
+        if result.returncode == 0:
+            color_log("✅ 数据库表 user_basic 已成功清空并重置自增 ID！", GREEN)
+        else:
+            color_log(f"❌ 数据库清空失败：{result.stderr}", RED)
+    except Exception as e:
+        color_log(f"⚠️ 数据库清空操作异常: {e}", YELLOW)
+
+    # === 3️⃣ 清理 Allure 报告目录 ===
+    allure_dirs = ["reports/allure-results", "reports/allure-report"]
+    for d in allure_dirs:
+        full_path = os.path.join(base_dir, d)
+        if os.path.exists(full_path):
+            shutil.rmtree(full_path)
+            color_log(f"[INIT] 🧹 已清空 Allure 报告目录: {full_path}", GREEN)
+        else:
+            color_log(f"[INIT] ⚠️ Allure 报告目录不存在: {full_path}", YELLOW)
+
+        # ✅ 删除后立即重建目录
+        os.makedirs(full_path, exist_ok=True)
+        color_log(f"[INIT] 📁 已重新创建 Allure 报告目录: {full_path}", CYAN)
+
+    # === 4️⃣ 初始化日志目录 ===
+    log_dir = os.path.join(base_dir, "logs")
+    os.makedirs(log_dir, exist_ok=True)
+    color_log(f"[INIT] 日志目录已准备: {log_dir}", GREEN)
 
 
-# ============================================================
-# ✅ 加载配置文件 config/config.yaml
-# ============================================================
-
+# ================================
+# 🌍 环境配置
+# ================================
 @pytest.fixture(scope="session")
 def get_base_url():
-    """读取 config/config.yaml 中的 base_url"""
-    config_path = os.path.join(os.getcwd(), "config", "config.yaml")
-    if not os.path.exists(config_path):
-        raise FileNotFoundError(f"[ERROR] 配置文件未找到: {config_path}")
-
-    with open(config_path, "r", encoding="utf-8") as f:
-        data = yaml.safe_load(f)
-        env = data.get("env", "test")
-        base_url = data["env_config"].get(env, {}).get("base_url")
-        print(f"[INIT] 当前环境: {env} -> {base_url}")
-        return base_url
+    """获取当前测试环境的 base_url"""
+    env = "test"
+    base_url = "http://localhost:8080"
+    color_log(f"[INIT] 当前环境: {env} -> {base_url}", CYAN)
+    return base_url
 
 
-# ============================================================
-# ✅ 加载 Token（从 extract.yaml）
-# ============================================================
-
-@pytest.fixture(scope="session")
-def get_token():
-    """从 extract.yaml 读取 token（兼容 list/dict 两种结构）"""
-    extract_path = os.path.join(os.getcwd(), "extract.yaml")
-
-    if not os.path.exists(extract_path):
-        print("[WARN] extract.yaml 不存在，将返回空 token")
-        return {"token": ""}
-
-    with open(extract_path, "r", encoding="utf-8") as f:
-        try:
-            data = yaml.safe_load(f) or {}
-
-            # 🧩 如果是 dict 格式
-            if isinstance(data, dict):
-                token = data.get("token", "")
-
-            # 🧩 如果是 list 格式（老版本）
-            elif isinstance(data, list):
-                token = ""
-                for item in data:
-                    if isinstance(item, dict) and "token" in item:
-                        token = item["token"]
-                        break
-            else:
-                token = ""
-
-        except Exception as e:
-            print(f"[ERROR] 读取 token 失败: {e}")
-            token = ""
-
-    return {"token": token}
+# ================================
+# 🧾 测试日志分隔
+# ================================
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_setup(item):
+    color_log(f"\n{'='*80}\n[TEST START] {item.name} - {datetime.now()}\n{'='*80}", CYAN)
+    yield
 
 
-
-# ============================================================
-# ✅ 全局日志初始化
-# ============================================================
-
-@pytest.fixture(scope="session", autouse=True)
-def init_env():
-    """初始化日志目录"""
-    log_dir = os.path.join(os.getcwd(), "logs")
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-    print(f"[INIT] 日志目录已准备: {log_dir}")
+@pytest.hookimpl(trylast=True, hookwrapper=True)
+def pytest_runtest_teardown(item):
+    yield
+    color_log(f"\n{'-'*80}\n[TEST END] {item.name} - {datetime.now()}\n{'-'*80}\n", CYAN)
