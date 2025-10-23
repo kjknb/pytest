@@ -2,7 +2,7 @@ FROM jenkins/jenkins:lts-jdk17
 
 USER root
 
-# 🧩 适配 Debian 13 (trixie) + 设置国内 apt 源 (USTC) + Python + pip 国内源
+# 🧩 适配 Debian 13 (trixie) + 设置国内 apt 源 (USTC) + Python + pip 国内源 + Allure CLI
 RUN set -eux; \
     # 切换到中科大源（支持 Debian 13）
     if [ -f /etc/apt/sources.list ]; then \
@@ -12,18 +12,20 @@ RUN set -eux; \
     fi; \
     apt-get clean; \
     apt-get update; \
-    # 安装 Python3 + pip3 + curl
-    apt-get install -y --no-install-recommends python3 python3-pip curl; \
-    # 配置 pip 国内源
+    # 安装 Python3 + pip3 + curl + unzip（Allure 需要）
+    apt-get install -y --no-install-recommends python3 python3-pip curl unzip; \
+    # 设置 pip 国内镜像
     pip3 config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple; \
-    # 直接安装测试依赖，不升级 pip（修复 uninstall-no-record-file）
+    # 安装 Python 测试依赖
     pip3 install pytest requests allure-pytest pyyaml pytest-dependency pytest-base-url pytest-html pytest-metadata --break-system-packages; \
+    # 🧩 安装 Allure Commandline (CLI)
+    curl -o allure-2.29.0.zip -L https://github.com/allure-framework/allure2/releases/download/2.29.0/allure-2.29.0.zip; \
+    unzip allure-2.29.0.zip -d /opt/; \
+    ln -s /opt/allure-2.29.0/bin/allure /usr/bin/allure; \
+    rm -f allure-2.29.0.zip; \
+    # 清理缓存
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 
-
 # 保持 Jenkins 启动命令
 CMD ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
-
-
-
