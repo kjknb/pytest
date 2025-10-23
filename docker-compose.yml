@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: 123456
-      MYSQL_DATABASE: ginchat
+      MYSQL_DATABASE: ginchat1
     ports:
       - "3307:3306"
     volumes:
@@ -48,7 +48,7 @@ services:
       DB_PORT: 3306
       DB_USER: root
       DB_PASSWORD: 123456
-      DB_NAME: ginchat
+      DB_NAME: ginchat1
       REDIS_HOST: my-redis
       REDIS_PORT: 6379
       REDIS_PASSWORD: 123456
@@ -58,7 +58,7 @@ services:
   jenkins:
     build:
       context: .
-      dockerfile: Dockerfile.jenkins
+      dockerfile: Dockerfile.jenkins   # 👈 用我们刚刚修好的那份
     container_name: jenkins
     user: root
     restart: always
@@ -75,10 +75,12 @@ services:
     networks:
       - ginchat_net
 
+# 定义持久化卷
 volumes:
   mysql-data:
   jenkins_home:
 
+# 统一 Docker 网络
 networks:
   ginchat_net:
     driver: bridge
