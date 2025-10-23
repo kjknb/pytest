@@ -1,0 +1,13 @@
+FROM jenkins/jenkins:lts
+
+USER root
+
+# 安装 Python3 + pip3 + 基础测试依赖
+RUN apt-get update && \
+    apt-get install -y python3 python3-pip curl && \
+    pip3 install --upgrade pip && \
+    pip3 install pytest requests allure-pytest pyyaml pytest-dependency pytest-base-url pytest-html pytest-metadata && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# 保持 Jenkins 启动命令不变
+CMD ["/usr/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
