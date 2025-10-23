@@ -7,7 +7,7 @@ env_config:
       Content-Type: "application/json"
 
   test:
-    base_url: "http://localhost:8080"
+    base_url: "http://host.docker.internal:8080"
     headers:
       Content-Type: "application/x-www-form-urlencoded"
 
