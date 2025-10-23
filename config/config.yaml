@@ -2,7 +2,7 @@ env: test  # 当前环境，可选：dev / test / prod
 
 env_config:
   dev:
-    base_url: "http://127.0.0.1:8080"
+    base_url: "http://host.docker.internal:8080"
     headers:
       Content-Type: "application/json"
 
