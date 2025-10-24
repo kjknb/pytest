@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        # ================== 全局变量 ==================
+        // ================== 全局变量 ==================
         PROJECT_NAME = "pytest_ginchat_api"
         BASE_URL = "http://ginchat-ginchat-app:8080"
         PYTHONPATH = "${WORKSPACE}"
