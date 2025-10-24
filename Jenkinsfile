@@ -2,14 +2,12 @@ pipeline {
     agent any
 
     environment {
-        // ================== 全局变量 ==================
         PROJECT_NAME = "pytest_ginchat_api"
         BASE_URL = "http://ginchat-ginchat-app:8080"
         PYTHONPATH = "${WORKSPACE}"
     }
 
     stages {
-
         stage('📦 Checkout Code') {
             steps {
                 echo "=== 拉取最新代码 ==="
@@ -58,8 +56,11 @@ pipeline {
             steps {
                 echo "=== 发布 Allure 报告 ==="
                 allure([
+                    includeProperties: false,
+                    jdk: '',
+                    results: [[path: 'reports/allure-results']],
                     reportBuildPolicy: 'ALWAYS',
-                    results: [[path: 'reports/allure-results']]
+                    commandline: 'Allure'    // ✅ 与全局配置名称一致
                 ])
             }
         }
@@ -69,15 +70,13 @@ pipeline {
         always {
             echo "🧹 清理缓存"
             sh 'rm -rf __pycache__ .pytest_cache'
-            archiveArtifacts artifacts: 'reports/allure-report/**', fingerprint: true
-            echo "✅ Allure 报告已归档，可在 Build Artifacts 下载"
         }
 
         success {
             echo "✅ 测试成功"
             sh '''
                 REPORT_URL="${BUILD_URL}Allure_Report/"
-                python3 common/notify_feishu.py "✅ pytest_ginchat_api 测试通过 🎉\\n点击查看报告: ${REPORT_URL}"
+                python3 common/notify_feishu.py "✅ pytest_ginchat_api 测试通过 🎉\\n点击查看报告: ${REPORT_URL}" || true
             '''
         }
 
@@ -85,7 +84,7 @@ pipeline {
             echo "❌ 测试失败"
             sh '''
                 REPORT_URL="${BUILD_URL}Allure_Report/"
-                python3 common/notify_feishu.py "❌ pytest_ginchat_api 测试失败，请查看 Jenkins 报告！\\n点击查看报告: ${REPORT_URL}"
+                python3 common/notify_feishu.py "❌ pytest_ginchat_api 测试失败，请查看 Jenkins 报告！\\n点击查看报告: ${REPORT_URL}" || true
             '''
         }
     }
