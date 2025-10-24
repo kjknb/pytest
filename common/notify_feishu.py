@@ -12,7 +12,7 @@ import sys
 import traceback
 
 # ✅ 你的飞书 Webhook 地址（请替换成你自己的）
-FEISHU_WEBHOOK_URL = "https://open.feishu.cn/open-apis/bot/v2/hook/xxxxxx"  # ← 修改这里
+FEISHU_WEBHOOK_URL = "https://open.feishu.cn/open-apis/bot/v2/hook/47e139e1-1a4f-49f1-b8f1-20e7f85af93d"  # ← 修改这里
 
 
 def send_feishu_msg(message: str, at_all: bool = False):
