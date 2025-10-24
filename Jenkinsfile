@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        // ================== 全局环境变量 ==================
+        # ================== 全局变量 ==================
         PROJECT_NAME = "pytest_ginchat_api"
         BASE_URL = "http://ginchat-ginchat-app:8080"
         PYTHONPATH = "${WORKSPACE}"
@@ -15,7 +15,7 @@ pipeline {
                 echo "=== 拉取最新代码 ==="
                 git branch: 'main',
                     url: 'https://github.com/kjknb/pytest.git',
-                    credentialsId: 'github-ssh-key'  // 你在 Jenkins 凭据里配置的 SSH Key ID
+                    credentialsId: 'github-ssh-key'
             }
         }
 
@@ -69,16 +69,24 @@ pipeline {
         always {
             echo "🧹 清理缓存"
             sh 'rm -rf __pycache__ .pytest_cache'
+            archiveArtifacts artifacts: 'reports/allure-report/**', fingerprint: true
+            echo "✅ Allure 报告已归档，可在 Build Artifacts 下载"
         }
 
         success {
             echo "✅ 测试成功"
-            sh 'python3 common/notify_feishu.py ✅ pytest_ginchat_api 测试通过 🎉'
+            sh '''
+                REPORT_URL="${BUILD_URL}Allure_Report/"
+                python3 common/notify_feishu.py "✅ pytest_ginchat_api 测试通过 🎉\\n点击查看报告: ${REPORT_URL}"
+            '''
         }
 
         failure {
             echo "❌ 测试失败"
-            sh 'python3 common/notify_feishu.py ❌ pytest_ginchat_api 测试失败，请查看 Jenkins 报告！'
+            sh '''
+                REPORT_URL="${BUILD_URL}Allure_Report/"
+                python3 common/notify_feishu.py "❌ pytest_ginchat_api 测试失败，请查看 Jenkins 报告！\\n点击查看报告: ${REPORT_URL}"
+            '''
         }
     }
 }
